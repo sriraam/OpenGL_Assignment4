@@ -32,7 +32,7 @@ void main(){
     float specularStrength = 1.0f;
     vec3 viewDir = normalize(FragPos - viewPos);
     vec3 reflectDir = reflect(-lightDir, norm);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 90);
     vec3 specular = specularStrength * spec * lightColor * specBool;  
 
 	vec3 result = (ambient+diffuse+specular) * materialcolor;

@@ -56,6 +56,6 @@ normal=mat3(transpose(inverse(model)))*NormalCameraspace;
     vec3 specular = specularStrength * spec * lightColor * specBool;  
 
 */
-	 result = (ambient+diffuse+specular) * materialcolor;
+	// result = (ambient+diffuse+specular) * materialcolor;
 
 }
