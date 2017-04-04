@@ -10,12 +10,15 @@ uniform mat4 projection;
   uniform vec3 lightPos; 
   uniform vec3 lightColor;
   uniform vec3 viewPos;
+  uniform vec3 specBool;
+  uniform vec3 diffBool;
+  uniform vec3 ambientBool;
 
   out vec3 result;
 
- vec3 FragPos;
- vec4 pos;
- vec3 normal;
+ out vec3 FragPos;
+ out vec4 pos;
+ out vec3 normal;
 
 void main(){
 pos=vec4(vertexPosition,1);
@@ -34,26 +37,25 @@ normal=mat3(transpose(inverse(model)))*NormalCameraspace;
 	// Normal = mat3(transpose(inverse(model))) * normalEyeSpace;  
 
 
-	 // Ambient
+/*	
+ // Ambient
     float ambientStrength = .8f;
-    vec3 ambient = ambientStrength * lightColor;
+    vec3 ambient = ambientStrength * lightColor * ambientBool;
   	
     // Diffuse 
     vec3 norm = normalize(normal);
     vec3 lightDir = normalize(FragPos - lightPos );
     float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor;
+    vec3 diffuse = diff * lightColor * diffBool;
 
 	  // Specular
     float specularStrength = 1.0f;
     vec3 viewDir = normalize(FragPos - viewPos);
     vec3 reflectDir = reflect(-lightDir, norm);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 100);
-    vec3 specular = specularStrength * spec * lightColor;  
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+    vec3 specular = specularStrength * spec * lightColor * specBool;  
 
-
+*/
 	 result = (ambient+diffuse+specular) * materialcolor;
-
-
 
 }

@@ -29,6 +29,9 @@ GLint modelLoc, viewLoc, projLoc;
 GLuint lightcolor_loc, materialcolor_loc;
 GLuint lightposLoc;
 GLint viewPosLoc;
+GLint specBoolLoc;
+GLint diffBoolLoc;
+GLint ambientBoolLoc;
 GLuint MatrixID;
 glm::mat4 mvp;
 
@@ -37,6 +40,10 @@ GLuint VertexBuffer2;
 GLuint normalBuffer;
 GLuint modelBuffer;
 GLuint elementbuffer;
+
+bool spec_bool =true;
+bool diff_bool = true;
+bool ambient_bool = true;
 
 shader shader_main;
 //shader shader_norm;
@@ -151,6 +158,10 @@ void display1()
 	viewLoc = glGetUniformLocation(shader_light.program, "view");
 	projLoc = glGetUniformLocation(shader_light.program, "projection");
 
+	specBoolLoc = glGetUniformLocation(shader_light.program, "specBool");
+	diffBoolLoc = glGetUniformLocation(shader_light.program, "diffBool");
+	ambientBoolLoc = glGetUniformLocation(shader_light.program, "ambientBool");
+
 	lightcolor_loc = glGetUniformLocation(shader_light.program, "lightColor");
 	materialcolor_loc = glGetUniformLocation(shader_light.program, "materialcolor");
 	lightposLoc = glGetUniformLocation(shader_light.program, "lightPos");
@@ -167,7 +178,7 @@ void display1()
 //	glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
 //	);
 	glUniform3f(lightcolor_loc, 1,1,1);
-	glUniform3f(materialcolor_loc, 1.0, .5, .3);
+	glUniform3f(materialcolor_loc, 1.0, .3,.3);
 	glUniform3f(lightposLoc, lightPos.x, lightPos.y, lightPos.z);
 
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(View));
@@ -176,6 +187,26 @@ void display1()
 //	Model = glm::translate(Model, lightPos);
 	Model = glm::scale(Model, glm::vec3(.5f)); // Make it a smaller cube
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(Model));
+	if (spec_bool) {
+		glUniform3f(specBoolLoc,1.0,1.0,1.0);
+	}
+	else {
+		glUniform3f(specBoolLoc, 0.0, 0.0, 0.0);
+	}
+	if (diff_bool) {
+		glUniform3f(diffBoolLoc, 1.0, 1.0, 1.0);
+	}
+	else {
+		glUniform3f(diffBoolLoc, 0.0, 0.0, 0.0);
+	}
+
+	if (ambient_bool) {
+		glUniform3f(ambientBoolLoc, 1.0, 1.0, 1.0);
+	}
+	else {
+		glUniform3f(ambientBoolLoc, 0.0, 0.0, 0.0);
+	}
+
 
 	// Draw the light object (using light's vertex attributes)
 	//glBindVertexArray(normalVAO);
@@ -200,7 +231,7 @@ void init() {
 	//**LOADING THE .off model file 
 	off_io off_loader;
 
-	ifstream inFile("seashell.off", ios::in);
+	ifstream inFile("cow.off", ios::in);
 	         if (inFile.bad()) {
 		                cout << "File error" << endl;
 		                return;
@@ -301,7 +332,6 @@ void init() {
 		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
 
-
 		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
 		0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
 		0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
@@ -336,8 +366,8 @@ void init() {
 
 	//why we are usig this ? 
 	//need to create a Vertex Array Object 
-	glGenVertexArrays(1, &normalVAO);
-	glGenVertexArrays(1, &VertexArrayID);
+	//glGenVertexArrays(1, &normalVAO);
+	//glGenVertexArrays(1, &VertexArrayID);
 
 	/*
 	glBindVertexArray(VertexArrayID);
@@ -372,6 +402,7 @@ void init() {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(1);
 	
+
 	// We only need to bind to the VBO (to link it with glVertexAttribPointer), no need to fill it; the VBO's data already contains all we need.
 	glBindBuffer(GL_ARRAY_BUFFER, modelBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*model.nVertices * 3, model.pVertices, GL_STATIC_DRAW);
@@ -385,15 +416,10 @@ void init() {
 */
 
 	
-	
-	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, model.nTris * sizeof(GLuint) * 3, model.pIndices, GL_STATIC_DRAW);
 
 
-	
-	
-	
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -444,6 +470,15 @@ void processKeys(unsigned char key, int xx, int yy)
 
 	case 'c':
 		printf("Camera Spherical Coordinates (%f, %f, %f)\n", alpha, beta, r);
+		break;
+	case'e':
+		spec_bool = !spec_bool;
+			break;
+	case'w':
+		diff_bool = !diff_bool;
+		break;
+	case'q':
+		ambient_bool = !ambient_bool;
 		break;
 
 	}

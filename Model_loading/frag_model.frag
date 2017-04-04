@@ -1,12 +1,15 @@
 #version 330 core
 out vec4 color;
 
-//in vec3 FragPos;
-//in vec4 pos;
-//in vec3 normal;
+in vec3 FragPos;
+in vec4 pos;
+in vec3 normal;
 
 in vec3 result;
 
+  uniform vec3 specBool;
+  uniform vec3 diffBool;
+  uniform vec3 ambientBool;
   uniform vec3 materialcolor;
   uniform vec3 lightPos; 
   uniform vec3 lightColor;
@@ -15,18 +18,25 @@ in vec3 result;
 
 void main(){
 
- /* Ambient
-    float ambientStrength = 1.0f;
-    vec3 ambient = ambientStrength * lightColor;
+// Ambient
+    float ambientStrength = .8f;
+    vec3 ambient = ambientStrength * lightColor * ambientBool;
   	
     // Diffuse 
     vec3 norm = normalize(normal);
-    vec3 lightDir = normalize(lightPos - FragPos);
+    vec3 lightDir = normalize(FragPos - lightPos );
     float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor;
+    vec3 diffuse = diff * lightColor * diffBool;
 
-	vec3 result = (diffuse) * materialcolor;
-	*/
+	  // Specular
+    float specularStrength = 1.0f;
+    vec3 viewDir = normalize(FragPos - viewPos);
+    vec3 reflectDir = reflect(-lightDir, norm);  
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+    vec3 specular = specularStrength * spec * lightColor * specBool;  
+
+	vec3 result = (ambient+diffuse+specular) * materialcolor;
+	
    
 	  color= vec4(result,1);
 
