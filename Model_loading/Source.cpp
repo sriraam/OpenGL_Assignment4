@@ -1,7 +1,6 @@
 #pragma comment (lib, "glew32s.lib")
 #define GLEW_STATIC
 #include<gl/glew.h>
-
 #include"shader.h"
 #include<GL/freeglut.h>
 //#include<iostream>
@@ -177,6 +176,7 @@ void display1()
 //	glm::vec3(0, 0, 0), // and looks at the origin
 //	glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
 //	);
+
 	glUniform3f(lightcolor_loc, 1,1,1);
 	glUniform3f(materialcolor_loc, 1.0, .3,.3);
 	glUniform3f(lightposLoc, lightPos.x, lightPos.y, lightPos.z);
