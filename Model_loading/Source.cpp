@@ -11,14 +11,17 @@
 //#include<string>
 
 #include "off_io.h"
+int no_models;
 
-GLuint VertexArrayID;
+GLuint *VertexArrayID;
 GLuint lightVAO;
-GLuint normalVAO;
+GLuint *normalVAO;
 
 //GLfloat pNormals[];
-LoadData mod_data;
-graphicData model;
+
+
+LoadData *mod_data;
+graphicData *model;
 
 
 glm::mat4 View, Model, Projection;
@@ -36,9 +39,9 @@ glm::mat4 mvp;
 
 GLuint VertexBuffer;
 GLuint VertexBuffer2;
-GLuint normalBuffer;
-GLuint modelBuffer;
-GLuint elementbuffer;
+GLuint *normalBuffer;
+GLuint *modelBuffer;
+GLuint *elementbuffer;
 
 bool spec_bool =true;
 bool diff_bool = true;
@@ -209,12 +212,16 @@ void display1()
 
 
 	// Draw the light object (using light's vertex attributes)
-	//glBindVertexArray(normalVAO);
-	glBindVertexArray(lightVAO);	
-	//glDrawArrays(GL_POINTS, 0, model.nVertices);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
-	glDrawElements(GL_TRIANGLES, model.nTris *3, GL_UNSIGNED_INT, (void*)0);
-	glBindVertexArray(0);
+glBindVertexArray(lightVAO);
+	for (int j = 0; j < no_models; j++) {
+
+		
+		//glDrawArrays(GL_POINTS, 0, model.nVertices);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
+		glDrawElements(GL_TRIANGLES, model[j].nTris * 3, GL_UNSIGNED_INT, (void*)0);
+		glBindVertexArray(0);
+	}
+
 
 	glutSwapBuffers();
 }
@@ -231,28 +238,123 @@ void init() {
 	//**LOADING THE .off model file 
 	off_io off_loader;
 
-	ifstream inFile("cow.off", ios::in);
-	         if (inFile.bad()) {
-		                cout << "File error" << endl;
-		                return;
+
+	//Loding multiple models:
+	string model_file_name;
+	//model_file_name = new string[no_models];
+	std::cout << "Enter no. of Models to be loaded";
+	std::cin >> no_models;
+/*	for (int i = 0; i < no_models; i++) {
+		std::cout << "Enter model name : \n";
+		std::cin >> model_file_name[i];
 	}
+	*/
+	//model_file_name = "cube.off";
+	
+	model = new graphicData[no_models];
+	mod_data = new LoadData;
+	
+	
+	glGenVertexArrays(1, &lightVAO);
 
-			 if (!off_loader.Load(inFile, &mod_data)) {
-				 std::cout << "OFF File is not loaded";
-			 }
-			 else {
-				 std::cout << "OFF File is loaded successfully";
+	//lightVAO = new GLuint[no_models];
+	elementbuffer = new GLuint[no_models];
+	normalBuffer = new GLuint[no_models];
+	modelBuffer = new GLuint[no_models];
+	for (int k = 0; k < no_models; k++) {
+		
 
-			 }
+			ifstream inFile("sphere2.off", ios::in);
+			if (inFile.bad()) {
+				cout << "File error" << endl;
+				return;
+			}
+
+			if (!off_loader.Load(inFile, mod_data)) {
+				std::cout << "OFF File is not loaded";
+			}
+			else {
+				std::cout << "OFF File is loaded successfully";
+
+			}
+			inFile.clear();
+			inFile.close();
+			//LoadData ld;
+			std::cout << "CHECK for vert 1 from model" << mod_data->verts[1];
+
+			model[k].nVertices = mod_data->verts.size();
+			model[k].pVertices = new GLfloat[mod_data->verts.size() * 3];
+			model[k].pNormals = new GLfloat[mod_data->vertnormal.size() * 3];
+			//GLfloat *model_ver = new GLfloat[mod_data.size()*3];
+
+			for (int i = 0; i < model[k].nVertices; i++) {
+				for (int j = 0; j < 3; j++)
+					model[k].pVertices[i * 3 + j] = mod_data->verts[i][j];
+			}
+
+			model[k].nTris = mod_data->tris.size();
+			model[k].pIndices = new GLuint[mod_data->tris.size() * 3];
+
+			//std::cout << "first INDICES is" << mod_data.tris[model.nTris-1][0]<<"\n";
+			for (int i = 0; i < model[k].nTris; i++) {
+				for (int j = 0; j < 3; j++) {
+					model[k].pIndices[i * 3 + j] = mod_data->tris[i][j];
+
+				}
+			}
+			for (int i = 0; i < model[k].nVertices; i++) {
+				for (int j = 0; j < 3; j++) {
+					model[k].pNormals[i * 3 + j] = mod_data->vertnormal[i][j];
+				}
+			}
+
+			// Generate 1 buffer, put the resulting identifier in vertexbuffer
+		//	glGenBuffers(1, &VertexBuffer[k]);
+			glGenBuffers(1, &normalBuffer[k]);
+			glGenBuffers(1, &modelBuffer[k]);
 
 
-	// Generate 1 buffer, put the resulting identifier in vertexbuffer
-	glGenBuffers(1, &VertexBuffer);
-	glGenBuffers(1, &normalBuffer);
-	glGenBuffers(1, &modelBuffer);
+
+			glBindVertexArray(lightVAO);
+
+			glGenBuffers(1, &elementbuffer[k]);
+
+
+			glBindBuffer(GL_ARRAY_BUFFER, normalBuffer[k]);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*model[k].nVertices * 3, model[k].pNormals, GL_STATIC_DRAW);
+
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+			glEnableVertexAttribArray(1);
+
+
+			// We only need to bind to the VBO (to link it with glVertexAttribPointer), no need to fill it; the VBO's data already contains all we need.
+			glBindBuffer(GL_ARRAY_BUFFER, modelBuffer[k]);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*model[k].nVertices * 3, model[k].pVertices, GL_STATIC_DRAW);
+
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0); // Note that we skip over the normal vectors
+			glEnableVertexAttribArray(0);
+
+
+			/*glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, model.nTris * sizeof(GLuint) * 3, model.pIndices, GL_STATIC_DRAW);
+			*/
 
 
 
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer[k]);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, model[k].nTris * sizeof(GLuint) * 3, model[k].pIndices, GL_STATIC_DRAW);
+
+			glBindVertexArray(0);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	}
+	
+
+
+
+
+	//Camera look Around (yaw,pitch,roll)
 	// set the camera position based on its spherical coordinates
 	camX = r * sin(alpha * 3.14f / 180.0f) * cos(beta * 3.14f / 180.0f);
 	camZ = r * cos(alpha * 3.14f / 180.0f) * cos(beta * 3.14f / 180.0f);
@@ -274,33 +376,7 @@ void init() {
 	};
 
 
-	//LoadData ld;
-	std::cout<<"CHECK for vert 1 from model"<<mod_data.verts[1];
-	
-	model.nVertices = mod_data.verts.size();
-	model.pVertices = new GLfloat[mod_data.verts.size() * 3];
-	model.pNormals = new GLfloat[mod_data.vertnormal.size() * 3];
-	//GLfloat *model_ver = new GLfloat[mod_data.size()*3];
 
-	for (int i = 0; i < model.nVertices;i++) {
-		for (int j = 0; j < 3; j++)
-			model.pVertices[i * 3 + j] = mod_data.verts[i][j];
-	}
-	model.nTris = mod_data.tris.size();
-	model.pIndices= new GLuint[mod_data.tris.size() * 3];
-
-	//std::cout << "first INDICES is" << mod_data.tris[model.nTris-1][0]<<"\n";
-	for (int i = 0; i < model.nTris; i++) {
-		for (int j = 0; j < 3; j++) {
-			model.pIndices[i*3 + j] = mod_data.tris[i][j];
-			
-		}
-	}
-	for (int i = 0; i < model.nVertices; i++) {
-		for (int j = 0; j < 3; j++) {
-			model.pNormals[i*3+j] = mod_data.vertnormal[i][j];
-		}
-	}
 
 	//std::cout << "list of vertNormal is\n";
 //	std::cout << model.nVertices << "\n";
@@ -310,7 +386,7 @@ void init() {
 	//	std::cout << model.pIndices[i ]<<"\n";
 
 	//}
-	std::cout << "No. of indices is :" << model.nTris;
+	//std::cout << "No. of indices is :" << model.nTris;
 	// Set up vertex data (and buffer(s)) and attribute pointers
 	GLfloat vertices[] = {
 
@@ -390,40 +466,7 @@ void init() {
 	*/
 	// Then, we set the light's VAO (VBO stays the same. After all, the vertices are the same for the light object (also a 3D cube))
 
-	glGenVertexArrays(1, &lightVAO);
-	glBindVertexArray(lightVAO);
 	
-	glGenBuffers(1, &elementbuffer);
-	
-	
-	glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*model.nVertices * 3, model.pNormals, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(1);
-	
-
-	// We only need to bind to the VBO (to link it with glVertexAttribPointer), no need to fill it; the VBO's data already contains all we need.
-	glBindBuffer(GL_ARRAY_BUFFER, modelBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*model.nVertices * 3, model.pVertices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0); // Note that we skip over the normal vectors
-	glEnableVertexAttribArray(0);
-	
-
-	/*glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, model.nTris * sizeof(GLuint) * 3, model.pIndices, GL_STATIC_DRAW);
-*/
-
-	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, model.nTris * sizeof(GLuint) * 3, model.pIndices, GL_STATIC_DRAW);
-
-
-
-	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	//glDisableVertexArrayAttrib(1);
 	//glDisableVertexArrayAttrib(0);
 	/*glBindVertexArray(normalVAO);
