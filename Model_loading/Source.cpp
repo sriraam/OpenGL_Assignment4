@@ -188,7 +188,7 @@ void display1()
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(Projection));
 	Model = glm::mat4();
 //	Model = glm::translate(Model, lightPos);
-	Model = glm::scale(Model, glm::vec3(.5f)); // Make it a smaller cube
+	Model = glm::scale(Model, glm::vec3(1.0f,1.0f,1.0f)); // Make it a smaller cube
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(Model));
 	if (spec_bool) {
 		glUniform3f(specBoolLoc,1.0,1.0,1.0);
@@ -264,7 +264,7 @@ void init() {
 	for (int k = 0; k < no_models; k++) {
 		
 
-			ifstream inFile("sphere2.off", ios::in);
+			ifstream inFile("cow.off", ios::in);
 			if (inFile.bad()) {
 				cout << "File error" << endl;
 				return;

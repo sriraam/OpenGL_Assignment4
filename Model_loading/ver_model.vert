@@ -28,10 +28,13 @@ gl_Position=projection *view* model*vec4(vertexPosition,1);
 
 
 
-vec3 NormalCameraspace =  vec3((view*model)*vec4(vertexNormal,0.0));
-normal=mat3(transpose(inverse(model)))*NormalCameraspace;
+//vec3 NormalCameraspace =  vec3((view*model)*vec4(vertexNormal,0.0));
+ //normal =  vec3((view*model)*vec4(vertexNormal,0.0));
+//normal=mat3(transpose(inverse(model)))*vertexNormal;
 //normal=NormalCameraspace;
-//normal=vertexNormal;
+
+//**Normals without any transformation(model,View or eye)
+normal=vertexNormal;
 
   // vec3 normalEyeSpace = vec3(view*model*vec4(normal,0.0));
 	// Normal = mat3(transpose(inverse(model))) * normalEyeSpace;  

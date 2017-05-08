@@ -31,7 +31,7 @@ void main(){
 	  // Specular
     float specularStrength = 1.0f;
     vec3 viewDir = normalize(FragPos - viewPos);
-    vec3 reflectDir = reflect(-lightDir, norm);  
+    vec3 reflectDir = reflect(lightDir, norm);  
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 90);
     vec3 specular = specularStrength * spec * lightColor * specBool;  
 
